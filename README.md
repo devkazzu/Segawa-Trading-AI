@@ -1,0 +1,1 @@
+# Segawa-Trading-AI
