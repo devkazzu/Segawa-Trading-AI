@@ -123,20 +123,18 @@ jobs:
       - name: Gradle diagnostics
         if: failure()
         run: |
-          if [ -f gradle-build.log ]; then
-            echo "### Gradle failure — last 40 lines" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            tail -40 gradle-build.log >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-            grep -E "^(FAILURE|\* What went wrong|> )" -A 4 gradle-build.log | head -40 | while IFS= read -r line; do
-              [ -n "$line" ] && echo "::error title=Gradle::$line"
-            done
-            grep -iE "error:|Caused by:|Unsupported|Could not (resolve|find)|requires|Minimum supported" gradle-build.log | head -12 | while IFS= read -r line; do
-              echo "::error title=Gradle cause::$line"
-            done
-          else
-            echo "::error::gradle-build.log was not produced — the wrapper itself failed"
-          fi
+          if [ ! -f gradle-build.log ]; then echo "::error::gradle-build.log missing — the Gradle wrapper itself failed"; exit 0; fi
+          echo "### Gradle failure" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          sed -n '/^FAILURE:/,$p' gradle-build.log | head -60 >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          sed -n '/^FAILURE:/,$p' gradle-build.log | head -60 | while IFS= read -r line; do
+            [ -n "$line" ] && echo "::error title=Gradle::${line}"
+          done
+          grep -iE "^[[:space:]]*Caused by:" gradle-build.log | head -6 | while IFS= read -r line; do
+            echo "::error title=Gradle cause::${line}"
+          done
+          true
 
       - name: Collect artifacts
         id: collect
