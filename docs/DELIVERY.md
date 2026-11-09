@@ -10,7 +10,7 @@ what still requires the owner's credentials or infrastructure. Nothing here is a
 | Check | Command | Result |
 |---|---|---|
 | TypeScript (strict, unused-locals) | `npm run typecheck` | ✅ exit 0, no diagnostics |
-| Unit + render tests | `npm test` | ✅ **6 suites / 81 tests passed**, 0 failed |
+| Unit + render tests | `npm test` | ✅ **7 suites / 103 tests passed**, 0 failed |
 | Production build | `npm run build` | ✅ exit 0, `frontend/dist` generated (20 JS chunks, vendor-split) |
 | Dev server | `npm run dev` | ✅ served on `0.0.0.0:5173`, modules transform with HTTP 200 |
 | Secret-pattern scan | CI grep rules | ✅ no `sk-…` / `service_role` strings in `frontend/` |
@@ -26,7 +26,7 @@ all lazy-loaded per route except the shell.
 
 | Item | Status | Evidence / note |
 |---|---|---|
-| Full responsive web application | ✅ | 20 routed pages; desktop sidebar + mobile bottom nav; smoke-tested at 380 px |
+| Full responsive web application | ✅ | 20 routed pages; desktop sidebar, mobile bottom nav with a centre AI action; every screen uses mobile-first breakpoints and a `lg:` desktop layout |
 | Hiro Segawa visual identity | ✅ | Generated mascot art in splash, onboarding, login, dashboard, coach, audits, empty states, profile, app icons, Android splash |
 | Functional dashboard | ✅ | 24 metrics, 5 charts, calendar heatmap, risk guard, all range filters |
 | Functional manual trading journal | ✅ | 40+ fields, search, 6 filters, sort, duplicate, delete, screenshots |
@@ -48,8 +48,10 @@ all lazy-loaded per route except the shell.
 | Release signing documented | ✅ | `docs/ANDROID.md` + 4 secrets; build.gradle only signs when a keystore exists |
 | GitHub repository committed and pushed | ✅ | Pushed to the working branch; PR #1 opened against `main` — https://github.com/devkazzu/Segawa-Trading-AI/pull/1 |
 | GitHub Pages deployment successful | ⚠️ **not yet live** | Workflow is complete and validated; Pages only deploys from `main` after merge + enabling “GitHub Actions” as the Pages source |
-| README and documentation | ✅ | README + 9 documents in `docs/` |
-| Tests passed | ✅ | 81/81 |
+| README and documentation | ✅ | README + 11 documents in `docs/` (incl. `RELEASE_CHECKLIST.md`) |
+| Accessibility of forms | ✅ | `Field` labels are associated with their inputs (`htmlFor`/`id`), so screen readers and integration tests can address every control |
+| Integration tests | ✅ | `src/test/flows.test.tsx` mounts the real `<App />`: all 20 routes, auth guard, log-trade → persist → journal, account deletion, CSV export |
+| Tests passed | ✅ | 103/103 |
 | Security review | ✅ | `docs/SECURITY.md` + automated secret grep gate in CI |
 | Final delivery report | ✅ | This file |
 
@@ -78,6 +80,14 @@ supabase secrets set OPENAI_API_KEY=sk-...
 #    Actions → "Android — build APK" → Run workflow
 ```
 
+## Design lock (Hiro Segawa UI)
+
+The shipped interface follows the approved reference art: deep violet surfaces, sakura accents, Poppins
+headings, the mascot on splash/onboarding/login/dashboard/coach/audit/empty states/profile, a desktop
+sidebar and a mobile bottom bar with the raised centre AI button. Dashboard opens with a greeting, a
+Net P&L and a win-rate hero card; the audit opens with a weighted trader score dial; risk is split into
+*Calculator* / *Limits* tabs; analytics tabs are *Overview / Strategy / Session / Timeframe*.
+
 ## Quality summary
 
 - **Finance correctness**: every metric is a pure function with fixed-input tests; no rounding drift
@@ -88,3 +98,5 @@ supabase secrets set OPENAI_API_KEY=sk-...
   the local engine never emits guarantee language.
 - **Maintainability**: one repository abstraction, one analytics engine, one design system, no duplicated
   metric logic across 20 screens.
+- **Release readiness**: `docs/RELEASE_CHECKLIST.md` lists every web, Supabase, AI and Android gate with
+  an observable pass condition, plus the rollback path.

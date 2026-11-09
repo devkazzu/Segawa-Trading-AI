@@ -1,6 +1,6 @@
 import {
-  forwardRef, useEffect, useId, useMemo, type ButtonHTMLAttributes, type InputHTMLAttributes,
-  type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes,
+  createContext, forwardRef, useContext, useEffect, useId, useMemo, type ButtonHTMLAttributes,
+  type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
@@ -42,11 +42,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
 /* ------------------------------- Fields ------------------------------- */
 
+/** Lets a Field label a nested control without every call site passing an id. */
+const FieldIdContext = createContext<string | undefined>(undefined);
+
 export function Field({ label, hint, error, children, className }: { label?: string; hint?: string; error?: string; children: ReactNode; className?: string }) {
+  const id = useId();
   return (
     <div className={clsx('min-w-0', className)}>
-      {label && <label className="label">{label}</label>}
-      {children}
+      {label && <label className="label" htmlFor={id}>{label}</label>}
+      <FieldIdContext.Provider value={id}>{children}</FieldIdContext.Provider>
       {hint && !error && <p className="mt-1 text-[11px] leading-relaxed text-ink-muted/80">{hint}</p>}
       {error && <p className="mt-1 text-[11px] text-loss">{error}</p>}
     </div>
@@ -54,22 +58,25 @@ export function Field({ label, hint, error, children, className }: { label?: str
 }
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(function Input(
-  { className, invalid, ...rest }, ref,
+  { className, invalid, id, ...rest }, ref,
 ) {
-  return <input ref={ref} className={clsx('input', invalid && 'border-loss/70 focus:border-loss', className)} {...rest} />;
+  const fieldId = useContext(FieldIdContext);
+  return <input ref={ref} id={id ?? fieldId} className={clsx('input', invalid && 'border-loss/70 focus:border-loss', className)} {...rest} />;
 });
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea(
-  { className, ...rest }, ref,
+  { className, id, ...rest }, ref,
 ) {
-  return <textarea ref={ref} className={clsx('input min-h-[90px] resize-y', className)} {...rest} />;
+  const fieldId = useContext(FieldIdContext);
+  return <textarea ref={ref} id={id ?? fieldId} className={clsx('input min-h-[90px] resize-y', className)} {...rest} />;
 });
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(
-  { className, children, ...rest }, ref,
+  { className, children, id, ...rest }, ref,
 ) {
+  const fieldId = useContext(FieldIdContext);
   return (
-    <select ref={ref} className={clsx('input appearance-none bg-[length:16px] pr-9', className)} {...rest}
+    <select ref={ref} id={id ?? fieldId} className={clsx('input appearance-none bg-[length:16px] pr-9', className)} {...rest}
       style={{
         backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A99AB9' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
         backgroundRepeat: 'no-repeat',

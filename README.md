@@ -29,7 +29,7 @@ each with editable broker contract specs (contract size, tick size, tick value).
 
 | Deliverable | Status |
 |---|---|
-| Web application (20 screens, all routed) | ✅ Working, 81 automated tests passing |
+| Web application (20 screens, all routed) | ✅ Working, 103 automated tests passing |
 | P&L / analytics / risk engine | ✅ Working, unit-tested against known values |
 | Manual journal with screenshots, rules, emotions | ✅ Working |
 | AI Monthly Intelligence, Trade Investigation, Coach | ✅ Working — live LLM **or** built-in local statistical engine |
@@ -156,7 +156,7 @@ Click **“Explore with demo data”** on the login screen to load a clearly-lab
 npm run dev         # Vite dev server on 0.0.0.0:5173
 npm run build       # typecheck + production build → frontend/dist
 npm run preview     # serve the production build
-npm test            # 81 unit + render tests (vitest)
+npm test            # 103 unit, render and flow tests (vitest)
 npm run typecheck   # tsc --noEmit equivalent
 ```
 
@@ -373,6 +373,7 @@ More: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 - [docs/SECURITY.md](docs/SECURITY.md) — threat model and checklist
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - [docs/DELIVERY.md](docs/DELIVERY.md) — final delivery checklist & verification log
+- [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) — per-release gates for web, Supabase, AI and Android
 
 ---
 
