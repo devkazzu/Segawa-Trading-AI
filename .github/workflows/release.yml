@@ -37,7 +37,7 @@ jobs:
           path: segawa-tradeai-web-${{ github.ref_name }}.zip
           retention-days: 90
       - name: Release notes
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: segawa-tradeai-web-${{ github.ref_name }}.zip
           generate_release_notes: true
