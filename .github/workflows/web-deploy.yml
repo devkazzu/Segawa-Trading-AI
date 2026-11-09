@@ -85,7 +85,7 @@ jobs:
           echo "| Assets | $(find frontend/dist/assets -type f | wc -l) files |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Bundle size | $(du -sh frontend/dist \| cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
           echo "| Supabase configured | ${{ vars.VITE_SUPABASE_URL != '' }} |" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: frontend/dist
 
