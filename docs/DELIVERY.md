@@ -15,6 +15,9 @@ what still requires the owner's credentials or infrastructure. Nothing here is a
 | Dev server | `npm run dev` | ✅ served on `0.0.0.0:5173`, modules transform with HTTP 200 |
 | Secret-pattern scan | CI grep rules | ✅ no `sk-…` / `service_role` strings in `frontend/` |
 | Git working tree | `git status` | ✅ no `node_modules`, `dist`, keystores or `.env` staged |
+| GitHub Actions — PR checks | `gh pr checks 1` | ✅ **Tests & typecheck: pass** (25 s) on the clean runner; build/deploy correctly skip on PRs |
+| GitHub Pages base path | static serve of `dist` at `/Segawa-Trading-AI/` | ✅ index, JS chunk, manifest, `sw.js`, mascot and icons all return HTTP 200 |
+| Security gate | workflow grep | ✅ pass on a clean tree, and fails when a key-shaped string is planted |
 
 Build output highlights (gzip): `supabase` 59.5 kB, `charts` 120.7 kB, `react` 54.2 kB, `pdf` 118.4 kB —
 all lazy-loaded per route except the shell.
@@ -43,7 +46,7 @@ all lazy-loaded per route except the shell.
 | Gradle build workflow | ✅ | `android-build.yml` with JDK 17, SDK 34, artifacts, summaries |
 | Debug APK successfully built | ❌ **not executed here** | This authoring sandbox has no JDK, Android SDK or Maven/Gradle registry access. The CI workflow is the supported build path; run **Actions → Android — build APK**. |
 | Release signing documented | ✅ | `docs/ANDROID.md` + 4 secrets; build.gradle only signs when a keystore exists |
-| GitHub repository committed and pushed | ✅ | Pushed to the working branch and opened as a PR |
+| GitHub repository committed and pushed | ✅ | Pushed to the working branch; PR #1 opened against `main` — https://github.com/devkazzu/Segawa-Trading-AI/pull/1 |
 | GitHub Pages deployment successful | ⚠️ **not yet live** | Workflow is complete and validated; Pages only deploys from `main` after merge + enabling “GitHub Actions” as the Pages source |
 | README and documentation | ✅ | README + 9 documents in `docs/` |
 | Tests passed | ✅ | 81/81 |
