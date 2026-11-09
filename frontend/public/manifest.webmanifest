@@ -1,0 +1,26 @@
+{
+  "name": "Segawa TradeAI — Trading Journal & AI Coach",
+  "short_name": "Segawa TradeAI",
+  "description": "AI trading journal, performance analytics, risk manager and prop-firm challenge tracker for XAUUSD and multi-market traders.",
+  "id": "/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#0A0714",
+  "theme_color": "#0A0714",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "business"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Add trade", "short_name": "Add", "url": "./#/journal/new", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "AI Coach", "short_name": "Coach", "url": "./#/coach", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Monthly audit", "short_name": "Audit", "url": "./#/audit", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

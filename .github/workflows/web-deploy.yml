@@ -1,0 +1,107 @@
+name: Web — test, build & deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  quality:
+    name: Tests & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests (calculation engine, risk, analysis, coach)
+        run: npm test
+      - name: Security gate — no secrets in the bundle source
+        run: |
+          set -e
+          # Real credential formats that must never be shipped to a browser bundle.
+          if grep -rnE "sk-[A-Za-z0-9]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|sb_secret_[A-Za-z0-9_-]{8,}|service_role_key\s*[:=]" \
+               frontend/src frontend/public frontend/index.html; then
+            echo "::error::A credential-shaped string is present in frontend source. Remove it and rotate the key."
+            exit 1
+          fi
+          # The service-role concept may only be referenced by the self-audit module.
+          if grep -rn "service_role" frontend/src frontend/public frontend/index.html | grep -v "src/lib/env.ts"; then
+            echo "::error::service_role referenced outside the env self-audit module."
+            exit 1
+          fi
+          if [ -n "${VITE_SUPABASE_ANON_KEY:-}" ] && printf '%s' "$VITE_SUPABASE_ANON_KEY" | grep -q "service_role"; then
+            echo "::error::The configured VITE_SUPABASE_ANON_KEY looks like a service-role key. Refusing to build."
+            exit 1
+          fi
+          echo "No secrets found in frontend source."
+
+  build:
+    name: Build production bundle
+    needs: quality
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Build
+        env:
+          # Repository is served from https://<user>.github.io/<repo>/
+          VITE_BASE_PATH: /Segawa-Trading-AI/
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_AI_FUNCTION: ${{ vars.VITE_AI_FUNCTION || 'ai-coach' }}
+        run: npm run build
+      - name: Verify build output
+        run: |
+          test -f frontend/dist/index.html
+          test -f frontend/dist/sw.js
+          test -f frontend/dist/manifest.webmanifest
+          echo "### Build summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Assets | $(find frontend/dist/assets -type f | wc -l) files |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Bundle size | $(du -sh frontend/dist \| cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Supabase configured | ${{ vars.VITE_SUPABASE_URL != '' }} |" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Report live URL
+        run: |
+          echo "### Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "Live at: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Segawa TradeAI deployed to ${{ steps.deployment.outputs.page_url }}"

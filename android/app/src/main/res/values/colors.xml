@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#A855F7</color>
+    <color name="colorPrimaryDark">#0A0714</color>
+    <color name="colorAccent">#FF79C6</color>
+    <color name="segawaBackground">#0A0714</color>
+    <color name="segawaSurface">#1A1028</color>
+    <color name="segawaViolet">#C084FC</color>
+    <color name="segawaSakura">#FF79C6</color>
+    <color name="segawaProfit">#47D7AC</color>
+    <color name="segawaLoss">#FF4D6D</color>
+    <color name="ic_launcher_background">#0A0714</color>
+</resources>
