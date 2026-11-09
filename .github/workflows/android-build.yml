@@ -70,7 +70,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.7'
+          gradle-version: wrapper
           cache-read-only: false
 
       - name: Decode release keystore (optional)
@@ -92,7 +92,9 @@ jobs:
         env:
           SEGAWA_VERSION_NAME: ${{ steps.version.outputs.name }}
           SEGAWA_VERSION_CODE: ${{ steps.version.outputs.code }}
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace --console=plain 2>&1 | tee ../gradle-build.log
 
       - name: Build release APK (signed)
         if: steps.keystore.outputs.available == 'true'
@@ -104,7 +106,9 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../gradle-build.log
 
       - name: Build release APK (unsigned fallback)
         if: steps.keystore.outputs.available != 'true' && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/'))
@@ -112,7 +116,27 @@ jobs:
         env:
           SEGAWA_VERSION_NAME: ${{ steps.version.outputs.name }}
           SEGAWA_VERSION_CODE: ${{ steps.version.outputs.code }}
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace --console=plain 2>&1 | tee ../gradle-build.log
+
+      - name: Gradle diagnostics
+        if: failure()
+        run: |
+          if [ -f gradle-build.log ]; then
+            echo "### Gradle failure — last 40 lines" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -40 gradle-build.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            grep -E "^(FAILURE|\* What went wrong|> )" -A 4 gradle-build.log | head -40 | while IFS= read -r line; do
+              [ -n "$line" ] && echo "::error title=Gradle::$line"
+            done
+            grep -iE "error:|Caused by:|Unsupported|Could not (resolve|find)|requires|Minimum supported" gradle-build.log | head -12 | while IFS= read -r line; do
+              echo "::error title=Gradle cause::$line"
+            done
+          else
+            echo "::error::gradle-build.log was not produced — the wrapper itself failed"
+          fi
 
       - name: Collect artifacts
         id: collect
@@ -160,6 +184,7 @@ jobs:
         with:
           name: android-build-logs
           path: |
+            gradle-build.log
             android/app/build/outputs/logs/**
             android/**/build/reports/**
           if-no-files-found: ignore
