@@ -67,7 +67,7 @@ Or push to `main` and download the APK from the Actions run.
 ## 7. Verify
 
 ```bash
-npm test          # 80 tests
+npm test          # 81 tests
 npm run build     # production bundle
 ```
 

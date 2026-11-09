@@ -5,7 +5,7 @@
 The workflow `.github/workflows/web-deploy.yml` runs on pushes to `main` and manual dispatch:
 
 1. `npm ci`
-2. typecheck + 80 tests
+2. typecheck + 81 tests
 3. secret-pattern grep (fails the build if a key leaks into `frontend/src` or `frontend/public`)
 4. `npm run build` with `VITE_BASE_PATH=/Segawa-Trading-AI/`
 5. upload Pages artifact → deploy

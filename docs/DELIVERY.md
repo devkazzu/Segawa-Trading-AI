@@ -10,7 +10,7 @@ what still requires the owner's credentials or infrastructure. Nothing here is a
 | Check | Command | Result |
 |---|---|---|
 | TypeScript (strict, unused-locals) | `npm run typecheck` | ✅ exit 0, no diagnostics |
-| Unit + render tests | `npm test` | ✅ **6 suites / 80 tests passed**, 0 failed |
+| Unit + render tests | `npm test` | ✅ **6 suites / 81 tests passed**, 0 failed |
 | Production build | `npm run build` | ✅ exit 0, `frontend/dist` generated (20 JS chunks, vendor-split) |
 | Dev server | `npm run dev` | ✅ served on `0.0.0.0:5173`, modules transform with HTTP 200 |
 | Secret-pattern scan | CI grep rules | ✅ no `sk-…` / `service_role` strings in `frontend/` |
@@ -46,7 +46,7 @@ all lazy-loaded per route except the shell.
 | GitHub repository committed and pushed | ✅ | Pushed to the working branch and opened as a PR |
 | GitHub Pages deployment successful | ⚠️ **not yet live** | Workflow is complete and validated; Pages only deploys from `main` after merge + enabling “GitHub Actions” as the Pages source |
 | README and documentation | ✅ | README + 9 documents in `docs/` |
-| Tests passed | ✅ | 80/80 |
+| Tests passed | ✅ | 81/81 |
 | Security review | ✅ | `docs/SECURITY.md` + automated secret grep gate in CI |
 | Final delivery report | ✅ | This file |
 

@@ -1,7 +1,7 @@
 # Testing
 
 ```bash
-npm test             # vitest, 6 suites / 80 tests
+npm test             # vitest, 6 suites / 81 tests
 npm run typecheck    # tsc project build, strict + noUnusedLocals
 ```
 

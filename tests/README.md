@@ -13,7 +13,7 @@ tooling to run them in CI:
 Run everything from the repository root:
 
 ```bash
-npm test           # 6 suites / 80 tests
+npm test           # 6 suites / 81 tests
 npm run typecheck  # strict TypeScript
 ```
 

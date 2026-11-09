@@ -111,6 +111,19 @@ describe('empty-journal states are honest, not fabricated', () => {
   });
 });
 
+describe('profile persistence (local mode)', () => {
+  it('restores a renamed profile from storage instead of showing the stale auth name', async () => {
+    localStorage.clear();
+    localStorage.setItem('segawa.v1.session', USER_ID);
+    localStorage.setItem('segawa.v1.users', JSON.stringify([{ ...USER, passwordHash: 'x', fullName: 'Old Name', createdAt: new Date().toISOString() }]));
+    localStorage.setItem(`segawa.v1.${USER_ID}.profiles`, JSON.stringify({ fullName: 'Renamed Trader' }));
+
+    await renderPage(<ProfilePage />, '/profile');
+    await waitFor(() => expect(screen.getAllByText('Renamed Trader').length).toBeGreaterThan(0));
+    expect(screen.queryByText('Old Name')).toBeNull();
+  });
+});
+
 /** Compile-time guard: the snapshot shape used by the store stays in sync. */
 const _shape: Partial<Snapshot> = { profile: { id: USER_ID } as Profile };
 void _shape;

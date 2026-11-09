@@ -263,8 +263,9 @@ export async function loadSnapshot(user: AuthUser): Promise<Snapshot> {
     const prefs = read<UserPreferences | null>(tableKey(user.id, 'preferences'), null);
     const risk = read<RiskSettings | null>(tableKey(user.id, 'risk_settings'), null);
     const localUser = read<LocalUser[]>(USERS_KEY, []).find((u) => u.id === user.id);
+    const savedProfile = read<Partial<Profile> | null>(tableKey(user.id, 'profiles'), null);
     return {
-      profile: { ...baseProfile, createdAt: localUser?.createdAt ?? baseProfile.createdAt },
+      profile: { ...baseProfile, ...(savedProfile ?? {}), createdAt: localUser?.createdAt ?? baseProfile.createdAt },
       trades: localReadTable<Trade>(user.id, 'trades'),
       strategies: localReadTable<Strategy>(user.id, 'strategies'),
       riskSettings: risk ?? { ...DEFAULT_RISK_SETTINGS },

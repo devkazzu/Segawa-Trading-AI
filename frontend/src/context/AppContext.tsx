@@ -204,11 +204,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user, patch]);
 
   const saveProfile = useCallback(async (p: Partial<Profile>) => {
-    patch((snap) => ({ ...snap, profile: { ...snap.profile, ...p } }));
-    if (user && backendMode === 'supabase') {
-      await repo.saveTable(user.id, 'profiles', { id: user.id, ...p } as unknown as { id: string });
-    }
-  }, [patch, user]);
+    const next = { ...snapshot.profile, ...p };
+    patch((snap) => ({ ...snap, profile: next }));
+    // Persist in both modes so a renamed profile survives a reload.
+    if (user) await repo.saveTable(user.id, 'profiles', next, true);
+  }, [patch, user, snapshot.profile]);
 
   /* -------------------------- collections -------------------------- */
 

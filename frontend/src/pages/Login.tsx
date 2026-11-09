@@ -124,6 +124,8 @@ export default function Login() {
 
           <p className="mt-6 text-center text-sm text-ink-muted">
             New to Segawa? <Link to="/register" className="font-semibold text-primary-neon hover:underline">Create an account</Link>
+            <span className="mx-1.5 text-line">·</span>
+            <Link to="/welcome" className="font-semibold text-primary-neon hover:underline">Take the tour</Link>
           </p>
         </div>
       </div>
