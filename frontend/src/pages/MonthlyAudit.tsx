@@ -6,7 +6,7 @@ import {
 import { clsx } from 'clsx';
 import { useApp } from '../context/AppContext';
 import { PageHeader } from '../components/layout/AppShell';
-import { Badge, Button, EmptyState, Metric, SectionTitle, Select, Tabs } from '../components/ui';
+import { Badge, Button, EmptyState, Metric, ScoreDial, SectionTitle, Select, Tabs } from '../components/ui';
 import { Markdown } from '../components/Markdown';
 import { Mascot } from '../components/brand';
 import { useToast } from '../context/ToastContext';
@@ -145,7 +145,15 @@ export default function MonthlyAudit() {
         <Metric label="Frequency" value={`${m.avgTradesPerDay}/day`} hint={`${m.tradingDays} trading days`} />
       </div>
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-3">
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="card col-span-full sm:col-span-2 lg:col-span-1">
+          <ScoreDial
+            score={Math.round(audit.riskScore * 0.4 + audit.disciplineScore * 0.3 + audit.executionScore * 0.3)}
+            label="Trader score"
+            sublabel="Weighted risk control, discipline and execution for this month."
+            size={116}
+          />
+        </div>
         {scores.map((s) => (
           <div key={s.label} className="card">
             <div className="flex items-center justify-between">

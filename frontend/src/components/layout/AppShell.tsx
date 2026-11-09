@@ -40,7 +40,8 @@ export function AppShell() {
 
   useEffect(() => { setDrawer(false); setMore(false); window.scrollTo({ top: 0 }); }, [location.pathname]);
 
-  const bottomItems = useMemo(() => NAV.filter((n) => ['/', '/journal', '/coach', '/analytics'].includes(n.to)), []);
+  // Two tabs left of the centre AI action, one right, plus "More".
+  const bottomItems = useMemo(() => NAV.filter((n) => ['/', '/journal', '/analytics'].includes(n.to)), []);
   const isActive = (to: string) => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to));
 
   return (
@@ -126,21 +127,35 @@ export function AppShell() {
 
       {/* ---------------- mobile bottom nav ---------------- */}
       <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-bg-alt/95 backdrop-blur-xl lg:hidden">
-        <div className="grid grid-cols-5">
-          {bottomItems.map((item) => (
+        <div className="grid grid-cols-5 items-end">
+          {bottomItems.slice(0, 2).map((item) => (
             <Link key={item.to} to={item.to} className={clsx('flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium', isActive(item.to) ? 'text-primary-neon' : 'text-ink-muted')}>
               <item.icon className={clsx('h-5 w-5', isActive(item.to) && 'drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]')} />
               {item.label.replace('Trade ', '')}
             </Link>
           ))}
+
+          {/* centre AI action, as in the Segawa design language */}
+          <Link to="/coach" aria-label="AI Coach" className="relative flex flex-col items-center pb-1.5">
+            <span className={clsx(
+              'grid h-14 w-14 -translate-y-4 place-items-center rounded-full bg-btn-primary text-[#17091f] shadow-glow ring-4 ring-bg',
+              isActive('/coach') && 'animate-pulse-glow',
+            )}>
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <span className={clsx('-mt-2 text-[10px] font-semibold', isActive('/coach') ? 'text-primary-neon' : 'text-ink-muted')}>AI</span>
+          </Link>
+
+          {bottomItems.slice(2).map((item) => (
+            <Link key={item.to} to={item.to} className={clsx('flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium', isActive(item.to) ? 'text-primary-neon' : 'text-ink-muted')}>
+              <item.icon className={clsx('h-5 w-5', isActive(item.to) && 'drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]')} />
+              {item.label.replace('Trade ', '')}
+            </Link>
+          ))}
+
           <button onClick={() => setMore(true)} className={clsx('flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium', more ? 'text-primary-neon' : 'text-ink-muted')}>
             <Grid2x2 className="h-5 w-5" /> More
           </button>
-        </div>
-        <div className="pointer-events-none absolute -top-6 right-4">
-          <Link to="/journal/new" aria-label="Add trade" className="pointer-events-auto grid h-12 w-12 place-items-center rounded-full bg-btn-primary text-[#17091f] shadow-glow">
-            <Plus className="h-6 w-6" />
-          </Link>
         </div>
       </nav>
 

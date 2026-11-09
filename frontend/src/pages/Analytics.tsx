@@ -13,7 +13,7 @@ import {
 import { exportTradesCsv, exportReportPdf, printCurrentView } from '../lib/export';
 import { runAudit } from '../lib/analysis';
 
-type Tab = 'overview' | 'breakdown' | 'distribution' | 'timing';
+type Tab = 'overview' | 'strategy' | 'session' | 'timeframe';
 
 export default function Analytics() {
   const { snapshot } = useApp();
@@ -138,9 +138,9 @@ export default function Analytics() {
         onChange={setTab}
         tabs={[
           { value: 'overview', label: 'Overview' },
-          { value: 'breakdown', label: 'Breakdown' },
-          { value: 'distribution', label: 'Distribution' },
-          { value: 'timing', label: 'Timing' },
+          { value: 'strategy', label: 'Strategy' },
+          { value: 'session', label: 'Session' },
+          { value: 'timeframe', label: 'Timeframe' },
         ]}
       />
 
@@ -193,13 +193,12 @@ export default function Analytics() {
         </div>
       )}
 
-      {tab === 'breakdown' && (
+      {tab === 'strategy' && (
         <div className="grid gap-3 lg:grid-cols-2">
-          {table('By instrument', byInstrument)}
-          {table('By market', byMarket, false)}
-          {table('By session', bySession)}
           {table('By strategy', byStrategy)}
           {table('By setup', bySetup)}
+          {table('By instrument', byInstrument)}
+          {table('By market', byMarket, false)}
           <div className="card">
             <SectionTitle title="Instrument P&L" />
             <HorizontalBarChart data={byInstrument.map((i) => ({ name: i.name, pnl: i.pnl }))} height={Math.max(180, byInstrument.length * 34)} />
@@ -207,7 +206,7 @@ export default function Analytics() {
         </div>
       )}
 
-      {tab === 'distribution' && (
+      {tab === 'timeframe' && (
         <div className="space-y-3">
           <div className="card">
             <SectionTitle title="R-multiple distribution" subtitle="How your outcomes cluster around risk" />
@@ -226,7 +225,7 @@ export default function Analytics() {
         </div>
       )}
 
-      {tab === 'timing' && (
+      {tab === 'session' && (
         <div className="space-y-3">
           <div className="card">
             <SectionTitle title="Weekday performance" subtitle="Net P&L by close day" />

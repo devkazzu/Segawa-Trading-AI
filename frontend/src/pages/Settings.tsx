@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Check, Download, Info, MonitorSmartphone, Save, Settings2, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bell, Check, ChevronRight, Download, FileText, Info, MonitorSmartphone, Save, Settings2, Shield, ShieldCheck, Sparkles, User } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PageHeader } from '../components/layout/AppShell';
 import { Badge, Button, Field, Input, SectionTitle, Select, Toggle } from '../components/ui';
@@ -37,6 +38,26 @@ export default function Settings() {
   return (
     <div>
       <PageHeader title="Settings" subtitle="Preferences, data defaults and platform information." actions={dirty ? <Button size="sm" onClick={() => void save()} icon={<Save className="h-4 w-4" />}>Save changes</Button> : undefined} />
+
+      {/* quick access — mirrors the reference settings list */}
+      <div className="card mb-3 !p-2">
+        {[
+          { to: '/profile', label: 'Profile & account', hint: 'Name, avatar, account balance', icon: User },
+          { to: '/ai-config', label: 'AI configuration', hint: 'Endpoint, model and connection test', icon: Sparkles },
+          { to: '/notifications', label: 'Notifications', hint: 'Risk guard and audit alerts', icon: Bell },
+          { to: '/reports', label: 'Reports & export', hint: 'Daily to annual, CSV / PDF / print', icon: FileText },
+          { to: '/risk', label: 'Risk management', hint: 'Position sizing and loss limits', icon: Shield },
+        ].map((r) => (
+          <Link key={r.to} to={r.to} className="flex items-center gap-3 rounded-xl px-2.5 py-2.5 transition-colors hover:bg-elevated/60">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-line bg-bg-alt text-primary-neon"><r.icon className="h-4 w-4" /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">{r.label}</span>
+              <span className="block truncate text-[11px] text-ink-muted">{r.hint}</span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-ink-muted" />
+          </Link>
+        ))}
+      </div>
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="card">

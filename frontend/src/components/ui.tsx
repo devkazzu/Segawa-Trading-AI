@@ -301,3 +301,37 @@ export function Sparkbars({ data, className }: { data: number[]; className?: str
 export function Kbd({ children }: { children: ReactNode }) {
   return <kbd className="rounded border border-line bg-elevated px-1.5 py-0.5 text-[10px] font-semibold text-ink-muted">{children}</kbd>;
 }
+
+/** Circular score gauge used by the monthly audit and risk screens. */
+export function ScoreDial({ score, label, sublabel, size = 132 }: { score: number; label?: string; sublabel?: string; size?: number }) {
+  const clamped = Math.max(0, Math.min(100, Math.round(score)));
+  const r = size / 2 - 9;
+  const c = 2 * Math.PI * r;
+  const tone = clamped >= 75 ? '#47D7AC' : clamped >= 50 ? '#C084FC' : '#FF4D6D';
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="-rotate-90">
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(168,85,247,0.16)" strokeWidth={10} />
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none" stroke={tone} strokeWidth={10} strokeLinecap="round"
+            strokeDasharray={c} strokeDashoffset={c - (c * clamped) / 100}
+            style={{ transition: 'stroke-dashoffset .6s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="text-center">
+            <p className="font-display text-2xl font-bold tabular-nums leading-none" style={{ color: tone }}>{clamped}</p>
+            <p className="mt-0.5 text-[9px] uppercase tracking-wider text-ink-muted">/ 100</p>
+          </div>
+        </div>
+      </div>
+      {(label || sublabel) && (
+        <div className="min-w-0">
+          {label && <p className="font-display text-sm font-semibold">{label}</p>}
+          {sublabel && <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">{sublabel}</p>}
+        </div>
+      )}
+    </div>
+  );
+}

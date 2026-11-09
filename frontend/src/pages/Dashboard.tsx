@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowRight, Bot, CircleDollarSign, Flame, Gauge, LineChart as LineIcon, Plus,
+  AlertTriangle, ArrowRight, Bell, Bot, CircleDollarSign, Flame, Gauge, LineChart as LineIcon, Plus,
   Sparkles, Target, TrendingDown, TrendingUp, Trophy, Wallet, Zap,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -34,6 +34,8 @@ export default function Dashboard() {
   const sessions = useMemo(() => groupPerformance(scoped, (t) => t.session), [scoped]);
   const strategies = useMemo(() => groupPerformance(scoped, (t) => t.strategy || 'Unspecified'), [scoped]);
   const riskState = useMemo(() => accountRiskState(trades, settings, settings.accountBalance + summarize(trades, settings.accountBalance).netPnl), [trades, settings]);
+  const greeting = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening';
+  const unread = snapshot.notifications.filter((n) => !n.read).length;
   const insight = useMemo(() => runAudit(trades, settings).findings[0], [trades, settings]);
   const allDays = useMemo(() => dayBuckets(trades), [trades]);
   const recent = useMemo(() => [...trades].sort((a, b) => +new Date(closeTime(b)) - +new Date(closeTime(a))).slice(0, 6), [trades]);
@@ -91,6 +93,50 @@ export default function Dashboard() {
           </div>
         }
       />
+
+      {/* greeting + hero KPIs — home screen of the Segawa app */}
+      <section className="mb-3 flex items-center gap-3">
+        <Mascot size="xs" />
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate font-display text-lg font-bold leading-tight">
+            Good {greeting}, {snapshot.profile.fullName.split(' ')[0]} <span className="text-sakura">♡</span>
+          </h2>
+          <p className="truncate text-xs text-ink-muted">Stay disciplined — no setup, no trade.</p>
+        </div>
+        <Link to="/notifications" aria-label="Notifications" className="relative grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-line bg-card text-ink-muted">
+          <Bell className="h-4 w-4" />
+          {unread > 0 && <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-sakura px-1 text-[9px] font-bold text-[#17091f]">{unread}</span>}
+        </Link>
+      </section>
+
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="card relative overflow-hidden !p-4">
+          <SakuraCorner className="-right-8 -top-8 h-28 w-28 opacity-60" />
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Net P&amp;L</p>
+          <p className={`mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl ${m.netPnl >= 0 ? 'text-profit' : 'text-loss'}`}>
+            {fmtMoney(m.netPnl, currency)}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <Badge tone={m.netPnl >= 0 ? 'profit' : 'loss'}>
+              {m.netPnl >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {fmtPct(m.returnPct)}
+            </Badge>
+            <span className="text-[11px] text-ink-muted">{range.label}</span>
+          </div>
+          <p className="mt-2 text-[11px] text-ink-muted">{m.closedTrades} closed · avg {fmtR(m.avgR)}</p>
+        </div>
+
+        <div className="card relative overflow-hidden !p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-muted">Win rate</p>
+          <p className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl">{m.winRate}%</p>
+          <div className="mt-2">
+            <ProgressBar value={m.winRate} tone={m.winRate >= 50 ? 'profit' : 'primary'} />
+          </div>
+          <p className="mt-2 text-[11px] text-ink-muted">
+            <span className="text-profit">{m.wins}W</span> · <span className="text-loss">{m.losses}L</span> · {m.breakevens}BE
+          </p>
+        </div>
+      </div>
 
       {riskState.breaches.length > 0 && (
         <div className="mb-4 rounded-2xl border border-loss/40 bg-loss/10 p-3.5">
@@ -161,8 +207,8 @@ export default function Dashboard() {
 
       {/* stat grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        <Stat label="Net P&L" value={fmtMoney(m.netPnl, currency)} tone={m.netPnl >= 0 ? 'profit' : 'loss'} hint={`${m.closedTrades} closed trades`} icon={<CircleDollarSign className="h-4 w-4" />} />
-        <Stat label="Win rate" value={`${m.winRate}%`} hint={`${m.wins}W · ${m.losses}L · ${m.breakevens}BE`} icon={<Trophy className="h-4 w-4" />} />
+        <Stat label="Gross profit" value={fmtMoney(m.grossProfit, currency, 0)} tone="profit" hint={`${m.wins} winning trades`} icon={<CircleDollarSign className="h-4 w-4" />} />
+        <Stat label="Gross loss" value={fmtMoney(m.grossLoss, currency, 0)} tone="loss" hint={`${m.losses} losing trades`} icon={<Trophy className="h-4 w-4" />} />
         <Stat label="Profit factor" value={m.profitFactor === Infinity ? '∞' : m.profitFactor.toFixed(2)} tone={m.profitFactor >= 1 ? 'profit' : 'loss'} hint={`GP ${fmtMoney(m.grossProfit, currency, 0)} / GL ${fmtMoney(m.grossLoss, currency, 0)}`} icon={<LineIcon className="h-4 w-4" />} />
         <Stat label="Expectancy" value={fmtMoney(m.expectancy, currency)} tone={m.expectancy >= 0 ? 'profit' : 'loss'} hint={`per trade · ${m.avgR.toFixed(2)}R avg`} icon={<Target className="h-4 w-4" />} />
         <Stat label="Max drawdown" value={fmtMoney(m.maxDrawdown, currency)} tone="loss" hint={`${m.maxDrawdownPct}% peak-to-trough`} icon={<TrendingDown className="h-4 w-4" />} />

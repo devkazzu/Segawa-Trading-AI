@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AlertTriangle, Calculator, Check, ImagePlus, Save, X } from 'lucide-react';
+import { AlertTriangle, Calculator, Check, ImagePlus, Save, TrendingDown, TrendingUp, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useApp } from '../context/AppContext';
 import { Crumb, PageHeader } from '../components/layout/AppShell';
@@ -160,9 +160,25 @@ export default function TradeForm() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_330px]">
         <div className="space-y-4">
+          {/* direction is the first decision — give it the full width */}
+          <section className="card !p-2" aria-label="Trade direction">
+            <div className="grid grid-cols-2 gap-2">
+              {(['buy', 'sell'] as Direction[]).map((d) => (
+                <button key={d} type="button" onClick={() => set('direction', d)} aria-pressed={trade.direction === d}
+                  className={clsx('flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-bold uppercase tracking-wide transition-all',
+                    trade.direction === d
+                      ? d === 'buy' ? 'border-profit/60 bg-profit/15 text-profit shadow-glow-sm' : 'border-loss/60 bg-loss/15 text-loss'
+                      : 'border-transparent bg-bg-alt text-ink-muted hover:border-primary/40')}>
+                  {d === 'buy' ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  {d}
+                </button>
+              ))}
+            </div>
+          </section>
+
           <section className="card">
-            <h3 className="mb-3 text-sm font-semibold">1 · Instrument &amp; direction</h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <h3 className="mb-3 text-sm font-semibold">1 · Instrument</h3>
+            <div className="grid gap-3 sm:grid-cols-3">
               <Field label="Instrument" hint="Preset or any symbol">
                 <Input list="instrument-list" value={trade.instrument} onChange={(e) => applyInstrument(e.target.value)} placeholder="XAUUSD" required />
                 <datalist id="instrument-list">{INSTRUMENTS.map((i) => <option key={i.symbol} value={i.symbol}>{i.name}</option>)}</datalist>
@@ -171,19 +187,6 @@ export default function TradeForm() {
                 <Select value={trade.market} onChange={(e) => set('market', e.target.value as Market)}>
                   {MARKETS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </Select>
-              </Field>
-              <Field label="Direction">
-                <div className="grid grid-cols-2 gap-1.5">
-                  {(['buy', 'sell'] as Direction[]).map((d) => (
-                    <button key={d} type="button" onClick={() => set('direction', d)}
-                      className={clsx('rounded-xl border py-2.5 text-xs font-bold uppercase transition-all',
-                        trade.direction === d
-                          ? d === 'buy' ? 'border-profit/60 bg-profit/15 text-profit shadow-glow-sm' : 'border-loss/60 bg-loss/15 text-loss'
-                          : 'border-line bg-bg-alt text-ink-muted hover:border-primary/40')}>
-                      {d}
-                    </button>
-                  ))}
-                </div>
               </Field>
               <Field label="Status">
                 <Select value={trade.status} onChange={(e) => {

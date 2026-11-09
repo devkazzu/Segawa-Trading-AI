@@ -3,7 +3,7 @@ import { AlertTriangle, Calculator, CheckCircle2, Save, Shield, ShieldAlert } fr
 import { clsx } from 'clsx';
 import { useApp } from '../context/AppContext';
 import { PageHeader } from '../components/layout/AppShell';
-import { Badge, Button, Field, Input, Metric, ProgressBar, SectionTitle, Select } from '../components/ui';
+import { Badge, Button, Field, Input, Metric, ProgressBar, SectionTitle, Select, Tabs } from '../components/ui';
 import { useToast } from '../context/ToastContext';
 import { fmtMoney, summarize } from '../lib/calc';
 import { INSTRUMENTS, findInstrument } from '../lib/instruments';
@@ -18,6 +18,7 @@ export default function Risk() {
 
   const [draft, setDraft] = useState<RiskSettings>(snapshot.riskSettings);
   const [dirty, setDirty] = useState(false);
+  const [tab, setTab] = useState<'calc' | 'limits'>('calc');
   const set = <K extends keyof RiskSettings>(k: K, v: RiskSettings[K]) => { setDraft((d) => ({ ...d, [k]: v })); setDirty(true); };
 
   /* ------------------------- position sizing ------------------------- */
@@ -98,8 +99,16 @@ export default function Risk() {
         </div>
       )}
 
-      <div className="grid gap-3 lg:grid-cols-2">
+      <Tabs
+        className="mb-3"
+        value={tab}
+        onChange={(v) => setTab(v as 'calc' | 'limits')}
+        tabs={[{ value: 'calc', label: 'Calculator' }, { value: 'limits', label: 'Limits' }]}
+      />
+
+      <div className="grid gap-3">
         {/* calculator */}
+        {tab === 'calc' && (
         <div className="card">
           <SectionTitle title="Position size & risk calculator" subtitle="Derive lots from the stop distance — never guess size" icon={<Calculator className="h-4 w-4" />} />
           <div className="grid gap-3 sm:grid-cols-2">
@@ -150,8 +159,10 @@ export default function Risk() {
           </p>
           <Button className="mt-2 w-full" size="sm" variant="secondary" onClick={() => void applyBalance()} icon={<Save className="h-4 w-4" />}>Use this balance as account starting balance</Button>
         </div>
+        )}
 
         {/* limits */}
+        {tab === 'limits' && (
         <div className="card">
           <SectionTitle title="Risk guard limits" subtitle="Enforced on the dashboard, journal and challenges" icon={<Shield className="h-4 w-4" />} />
           <div className="grid gap-3 sm:grid-cols-2">
@@ -182,6 +193,7 @@ export default function Risk() {
             <ProgressBar label="Drawdown used" value={live.drawdownPct} max={draft.maxDrawdown} tone="loss" />
           </div>
         </div>
+        )}
       </div>
 
       <div className="mt-3 card">
