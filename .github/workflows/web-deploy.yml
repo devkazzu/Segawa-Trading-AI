@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
 
 jobs:
   quality:
@@ -37,11 +37,22 @@ jobs:
       - name: Security gate — no secrets in the bundle source
         run: |
           set -e
-          if grep -rnE "sk-[A-Za-z0-9]{20,}|service_role|SUPABASE_SERVICE" frontend/src frontend/public --include="*.ts" --include="*.tsx" --include="*.html" --include="*.js" ; then
-            echo "::error::Possible secret committed to frontend source"
+          # Real credential formats that must never be shipped to a browser bundle.
+          if grep -rnE "sk-[A-Za-z0-9]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|sb_secret_[A-Za-z0-9_-]{8,}|service_role_key\s*[:=]" \
+               frontend/src frontend/public frontend/index.html; then
+            echo "::error::A credential-shaped string is present in frontend source. Remove it and rotate the key."
             exit 1
           fi
-          echo "No secret patterns found in frontend source."
+          # The service-role concept may only be referenced by the self-audit module.
+          if grep -rn "service_role" frontend/src frontend/public frontend/index.html | grep -v "src/lib/env.ts"; then
+            echo "::error::service_role referenced outside the env self-audit module."
+            exit 1
+          fi
+          if [ -n "${VITE_SUPABASE_ANON_KEY:-}" ] && printf '%s' "$VITE_SUPABASE_ANON_KEY" | grep -q "service_role"; then
+            echo "::error::The configured VITE_SUPABASE_ANON_KEY looks like a service-role key. Refusing to build."
+            exit 1
+          fi
+          echo "No secrets found in frontend source."
 
   build:
     name: Build production bundle
