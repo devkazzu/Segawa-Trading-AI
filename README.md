@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/brand/hiro-segawa.png" alt="Hiro Segawa — Segawa TradeAI mascot" width="520" />
+<img src="docs/assets/hiro-segawa.jpg" alt="Hiro Segawa — Segawa TradeAI mascot" width="520" />
 
 # Segawa TradeAI
 
