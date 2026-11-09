@@ -1,0 +1,92 @@
+name: Web — test, build & deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  quality:
+    name: Tests & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests (calculation engine, risk, analysis, coach)
+        run: npm test
+      - name: Security gate — no secrets in the bundle source
+        run: |
+          set -e
+          if grep -rnE "sk-[A-Za-z0-9]{20,}|service_role|SUPABASE_SERVICE" frontend/src frontend/public --include="*.ts" --include="*.tsx" --include="*.html" --include="*.js" ; then
+            echo "::error::Possible secret committed to frontend source"
+            exit 1
+          fi
+          echo "No secret patterns found in frontend source."
+
+  build:
+    name: Build production bundle
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Build
+        env:
+          # Repository is served from https://<user>.github.io/<repo>/
+          VITE_BASE_PATH: /Segawa-Trading-AI/
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_AI_FUNCTION: ${{ vars.VITE_AI_FUNCTION || 'ai-coach' }}
+        run: npm run build
+      - name: Verify build output
+        run: |
+          test -f frontend/dist/index.html
+          test -f frontend/dist/sw.js
+          test -f frontend/dist/manifest.webmanifest
+          echo "### Build summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Assets | $(find frontend/dist/assets -type f | wc -l) files |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Bundle size | $(du -sh frontend/dist \| cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Supabase configured | ${{ vars.VITE_SUPABASE_URL != '' }} |" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Report live URL
+        run: |
+          echo "### Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "Live at: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice::Segawa TradeAI deployed to ${{ steps.deployment.outputs.page_url }}"

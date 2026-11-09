@@ -1,0 +1,51 @@
+name: Release — verify, tag summary & publish artifacts
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Verify tests pass on the tagged commit
+        run: npm test
+      - name: Build web bundle (release verification)
+        env:
+          VITE_BASE_PATH: /Segawa-Trading-AI/
+        run: npm run build
+      - name: Archive deployable web build
+        run: |
+          cd frontend/dist && zip -qr "$GITHUB_WORKSPACE/segawa-tradeai-web-${{ github.ref_name }}.zip" .
+      - name: Upload web release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: segawa-web-release
+          path: segawa-tradeai-web-${{ github.ref_name }}.zip
+          retention-days: 90
+      - name: Release notes
+        uses: softprops/action-gh-release@v2
+        with:
+          files: segawa-tradeai-web-${{ github.ref_name }}.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          body: |
+            ## Segawa TradeAI ${{ github.ref_name }}
+
+            Web build of the tagged commit (deployable static bundle).
+            The Android APK for this tag is published by the *Android — build APK* workflow.
+
+            **Live web app:** https://${{ github.repository_owner }}.github.io/Segawa-Trading-AI/

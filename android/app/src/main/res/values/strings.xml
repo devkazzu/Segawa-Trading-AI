@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Segawa TradeAI</string>
+    <string name="title_activity_main">Segawa TradeAI</string>
+    <string name="package_name">com.segawa.tradeai</string>
+    <string name="custom_url_scheme">com.segawa.tradeai</string>
+</resources>

@@ -1,0 +1,32 @@
+{
+  "name": "segawa-tradeai",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Segawa TradeAI — AI trading journal, analytics, coach and risk intelligence for XAUUSD and multi-market traders.",
+  "license": "MIT",
+  "workspaces": ["frontend"],
+  "scripts": {
+    "dev": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "preview": "npm run preview --workspace frontend",
+    "test": "npm run test --workspace frontend",
+    "typecheck": "npm run typecheck --workspace frontend",
+    "lint": "npm run typecheck --workspace frontend",
+    "cap:sync": "cap sync android",
+    "cap:add": "cap add android",
+    "cap:open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/camera": "^6.1.2",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/filesystem": "^6.0.2",
+    "@capacitor/keyboard": "^6.0.3",
+    "@capacitor/splash-screen": "^6.0.3",
+    "@capacitor/status-bar": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
